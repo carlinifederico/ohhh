@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OHHH™ — Creative Group</title>
+<meta name="description" content="OHHH™ — a creative group that has been working together for 20 years.">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="OHHH™ — Creative Group">
+<meta property="og:description" content="A creative group that has been working together for 20 years.">
+<meta property="og:image" content="assets/reel-poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<main>
+
+  <!-- ─────────────────────────  HERO  ───────────────────────── -->
+  <section class="hero" id="top">
+    <video class="hero__video" autoplay muted loop playsinline preload="auto"
+           poster="assets/reel-poster.jpg" aria-hidden="true" tabindex="-1">
+      <source src="assets/reel.mp4" type="video/mp4">
+    </video>
+    <div class="hero__scrim" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <h1 class="hero__logo">
+      <img src="assets/logo.png" alt="OHHH" width="1400" height="451">
+    </h1>
+
+    <a class="scroll" href="#about">
+      <span class="scroll__label">More</span>
+      <svg class="scroll__arrow" viewBox="0 0 24 40" fill="none" aria-hidden="true">
+        <path d="M12 0v36M2 27l10 11L22 27" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="square"/>
+      </svg>
+    </a>
+  </section>
+
+  <!-- ─────────────────────────  ABOUT  ───────────────────────── -->
+  <section class="about" id="about">
+
+    <p class="statement">
+      <span class="line" data-reveal><i>We are a</i> CREATIVE</span>
+      <span class="line" data-reveal>GROUP <i>that has been</i></span>
+      <span class="line" data-reveal>WORKING TOGETHER</span>
+      <span class="line" data-reveal><i>for</i> 20 YEARS</span>
+    </p>
+
+    <div class="people">
+      <div class="person" data-reveal>
+        <h2 class="person__name">Santiago<br>Tereso</h2>
+        <p class="person__role">Executive Producer</p>
+        <!-- TODO: reemplazar por la URL real del LinkedIn de Santiago -->
+        <a class="person__link" href="https://www.linkedin.com/" target="_blank" rel="noopener">
+          <span>LinkedIn</span>
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 13L13 3M5.5 3H13v7.5" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="person person--right" data-reveal>
+        <h2 class="person__name">Federico<br>Carlini</h2>
+        <p class="person__role">Creative Director</p>
+        <a class="person__link" href="https://federicocarlini.com" target="_blank" rel="noopener">
+          <span>federicocarlini.com</span>
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 13L13 3M5.5 3H13v7.5" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- TODO: reemplazar por el mail de contacto definitivo -->
+    <a class="cta" href="mailto:hello@ohhh.tv" data-reveal>
+      <span class="cta__text">Get in touch</span>
+      <svg class="cta__arrow" viewBox="0 0 44 24" fill="none" aria-hidden="true">
+        <path d="M0 12h40M30 2l11 10-11 10" stroke="currentColor" stroke-width="2.6"
+              stroke-linecap="square"/>
+      </svg>
+    </a>
+
+    <footer class="footer">
+      <span>OHHH™</span>
+      <span>© 2026</span>
+    </footer>
+  </section>
+
+</main>
+
+<script src="main.js"></script>
+</body>
+</html>
