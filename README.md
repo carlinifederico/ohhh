@@ -66,3 +66,23 @@ normalmente en menos de un minuto.
   intercaladas y los roles, **Space Mono** para las etiquetas chicas.
 - El logo del hero es el PNG violeta: se lo pinta de blanco por CSS
   (`filter: brightness(0) invert(1)`), así hay un solo archivo para mantener.
+
+### Transición entre las dos pantallas
+
+Está toda en `main.js` y se ajusta con dos funciones:
+
+- **Snap.** Si el scroll queda parado entre las dos secciones, se acomoda solo a
+  la más cercana con un easing propio (`easeInOutCubic`, 420–840 ms según la
+  distancia). Sólo actúa en esa costura: nunca dentro de una sección, y cualquier
+  rueda, toque o tecla lo cancela al instante.
+- **Disolución líquida.** El progreso del scroll (`p`, de 0 a 1) maneja opacidad,
+  desenfoque, escala y un `feDisplacementMap` (el filtro `#liquid` en el HTML)
+  que deforma el logo al salir y el titular al entrar. La deformación es máxima a
+  mitad de camino y vuelve a cero en los dos extremos.
+
+Los filtros se activan sólo mientras dura el cruce (clase `is-morphing` en el
+`body`): en reposo no hay ningún filtro aplicado y no cuesta un solo frame.
+Con `prefers-reduced-motion` se desactiva todo — snap incluido.
+
+Para calibrar, los números están juntos en la función `paint()`: `7` es el
+desenfoque máximo de salida, `12` la fuerza del warp, `0.07` el parallax.

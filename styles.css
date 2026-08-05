@@ -17,7 +17,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* No native smooth scroll: the snap in main.js drives its own easing. */
+html { scroll-behavior: auto; }
 
 body {
   margin: 0;
@@ -30,6 +31,8 @@ body {
 }
 
 img, svg, video { display: block; max-width: 100%; }
+
+.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 a { color: inherit; text-decoration: none; }
 
@@ -67,6 +70,8 @@ a { color: inherit; text-decoration: none; }
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  transform: scale(var(--video-s, 1));
+  transition: none;
 }
 
 /* Scrim: keeps the white logo legible over any footage */
@@ -97,6 +102,9 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
   display: flex;
   justify-content: center;
+  /* --exit-* are driven by scroll from main.js */
+  opacity: var(--exit-o, 1);
+  transform: translate3d(0, var(--exit-y, 0px), 0) scale(var(--exit-s, 1));
 }
 
 .hero__logo img {
@@ -126,6 +134,13 @@ a { color: inherit; text-decoration: none; }
   padding: .5rem 1rem;
   opacity: 0;
   animation: fade-in 1.2s var(--ease) .9s forwards;
+}
+
+/* Once the intro has run, the scroll cue rides the same exit as the logo */
+.is-scrolled .scroll {
+  animation: none;
+  opacity: var(--exit-o, 1);
+  transform: translate3d(0, calc(var(--exit-y, 0px) * -.5), 0);
 }
 
 .scroll__label {
@@ -160,7 +175,16 @@ a { color: inherit; text-decoration: none; }
   padding: clamp(2.75rem, 6vw, 4.5rem) var(--pad) max(var(--pad), env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+}
+
+/* Wrapper so the content can dissolve while the violet stays solid */
+.about__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: clamp(2rem, 4vw, 3.25rem);
+  opacity: var(--enter-o, 1);
+  transform: translate3d(0, var(--enter-y, 0px), 0);
 }
 
 /* — statement — */
@@ -304,6 +328,31 @@ a { color: inherit; text-decoration: none; }
   margin-top: calc(clamp(2rem, 4.5vw, 4rem) * -.5);
 }
 
+/* ─────────────────────────  LIQUID DISSOLVE  ─────────────────────────
+   Only live while the page is between the two sections — at rest there is
+   no filter on anything, so nothing costs a frame. */
+
+.is-morphing .hero__logo,
+.is-morphing .about__inner {
+  will-change: opacity, transform, filter;
+}
+
+.is-morphing .hero__logo {
+  filter: url(#liquid) blur(var(--exit-blur, 0px));
+}
+
+.is-morphing .about__inner {
+  filter: blur(var(--enter-blur, 0px));
+}
+
+/* The warp itself is desktop-only: a displacement map over a wall of type is
+   too expensive on phones, where the blur alone already reads as liquid. */
+@media (min-width: 761px) {
+  .is-morphing .statement {
+    filter: url(#liquid);
+  }
+}
+
 /* ─────────────────────────  REVEALS  ───────────────────────── */
 
 [data-reveal] {
@@ -356,12 +405,22 @@ a { color: inherit; text-decoration: none; }
 /* ─────────────────────────  MOTION  ───────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-
   .hero__logo img,
-  .scroll {
+  .hero__logo,
+  .scroll,
+  .is-scrolled .scroll,
+  .about__inner {
     animation: none;
     opacity: 1;
+    transform: none;
+  }
+
+  /* note: no filter reset on the img — that filter is what makes it white */
+  .hero__logo,
+  .about__inner,
+  .statement,
+  .hero__video {
+    filter: none;
     transform: none;
   }
 
