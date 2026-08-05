@@ -71,10 +71,13 @@ normalmente en menos de un minuto.
 
 Está toda en `main.js` y se ajusta con dos funciones:
 
-- **Snap.** Si el scroll queda parado entre las dos secciones, se acomoda solo a
-  la más cercana con un easing propio (`easeInOutCubic`, 420–840 ms según la
-  distancia). Sólo actúa en esa costura: nunca dentro de una sección, y cualquier
-  rueda, toque o tecla lo cancela al instante.
+- **Snap.** Al primer clic de rueda —o a la primera flecha, o al empujón más
+  chico con el dedo— arranca el viaje entero a la otra pantalla, con easing
+  propio (`easeInOutCubic`, ~660 ms). No espera a que frenes ni mide distancia:
+  alcanza con la dirección del gesto. Mientras dura, el resto del gesto y su
+  inercia se descartan para que nada pelee con la animación.
+  Sólo actúa en la costura entre las dos secciones: si la violeta no entra
+  entera en pantalla, adentro se scrollea nativo y no se mete nadie.
 - **Disolución líquida.** El progreso del scroll (`p`, de 0 a 1) maneja opacidad,
   desenfoque, escala y un `feDisplacementMap` (el filtro `#liquid` en el HTML)
   que deforma el logo al salir y el titular al entrar. La deformación es máxima a

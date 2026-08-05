@@ -132,8 +132,7 @@
     var dist = target - from;
     if (Math.abs(dist) < 2) return;
 
-    // longer trips get a little more time, but never enough to feel slow
-    var dur   = 420 + 420 * Math.min(1, Math.abs(dist) / (edge || 1));
+    var dur   = 340 + 320 * Math.min(1, Math.abs(dist) / (edge || 1));
     var start = null;
     snapping  = true;
 
@@ -142,35 +141,90 @@
       if (start === null) start = now;
       var t = Math.min(1, (now - start) / dur);
       window.scrollTo(0, Math.round(from + dist * easeInOutCubic(t)));
-      if (t < 1) { snapRaf = requestAnimationFrame(step); }
-      else { snapping = false; snapRaf = null; }
+      if (t < 1) {
+        snapRaf = requestAnimationFrame(step);
+      } else {
+        snapping = false;
+        snapRaf  = null;
+        settled  = now;   // brief cooldown so trailing momentum is ignored
+      }
     })(performance.now());
+  }
+
+  /* Where a gesture in this direction should land, or null to keep hands off.
+     One notch is enough: past an edge we commit, we never wait for a distance. */
+  function destination(dir) {
+    if (edge <= 0 || !dir) return null;
+    var y = scrollY();
+    if (dir > 0) return y < edge ? edge : null;          // down, still above the seam
+    return y > 0 && y <= edge ? 0 : null;                // up, at or before the seam
   }
 
   function maybeSnap() {
     if (snapping || edge <= 0) return;
     var y = scrollY();
-    // hands off unless we are parked mid-seam
-    if (y <= 0 || y >= edge) return;
-    snapTo(y < edge / 2 ? 0 : edge);
+    if (y <= 0 || y >= edge) return;                     // parked on a page: leave it
+    var target = destination(lastDir);
+    snapTo(target === null ? (y < edge / 2 ? 0 : edge) : target);
   }
 
   /* ── wiring ────────────────────────────────────────────── */
 
   var ticking = false;
+  var lastY   = scrollY();
+  var lastDir = 0;
+  var settled = -1e9;
 
   function onScroll() {
+    var y = scrollY();
+    if (y !== lastY) { lastDir = y > lastY ? 1 : -1; lastY = y; }
+
     if (!ticking) {
       ticking = true;
       requestAnimationFrame(function () { ticking = false; paint(); });
     }
     if (snapping) return;
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(maybeSnap, 130);
+    idleTimer = setTimeout(maybeSnap, 55);
   }
 
-  // any deliberate input wins over an in-flight snap
-  ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(function (evt) {
+  /* The wheel is handled outright: the first notch starts the trip and the rest
+     of the gesture (and its momentum) is swallowed, so nothing fights the ease. */
+  window.addEventListener('wheel', function (e) {
+    if (e.ctrlKey) return;                               // pinch zoom, not a scroll
+
+    if (snapping) { e.preventDefault(); return; }
+
+    var dir    = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0;
+    var target = destination(dir);
+    if (target === null) return;                         // inside a page: native scroll
+
+    e.preventDefault();
+    if (performance.now() - settled < 260) return;       // still coasting from the last one
+    lastDir = dir;
+    snapTo(target);
+  }, { passive: false });
+
+  // keyboard paging gets the same treatment
+  window.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'A' || tag === 'BUTTON' || e.metaKey || e.ctrlKey || e.altKey) return;
+
+    var dir = 0;
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') dir = 1;
+    if (e.key === 'ArrowUp'   || e.key === 'PageUp')                    dir = -1;
+
+    var target = dir ? destination(dir) : null;
+    if (target === null) return;
+
+    e.preventDefault();
+    stopSnap();
+    lastDir = dir;
+    snapTo(target);
+  });
+
+  // dragging the scrollbar or putting a finger down wins over an in-flight snap
+  ['touchstart', 'pointerdown'].forEach(function (evt) {
     window.addEventListener(evt, stopSnap, { passive: true });
   });
 
