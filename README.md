@@ -64,8 +64,16 @@ normalmente en menos de un minuto.
 - **Violeta** `#7F00FF` (el del logo) · **negro** `#0A0A0A` · **hueso** `#F2F0EB`.
 - **Archivo Black** para los titulares, **Instrument Serif** *itálica* para las palabras
   intercaladas y los roles, **Space Mono** para las etiquetas chicas.
-- El logo del hero es el PNG violeta: se lo pinta de blanco por CSS
-  (`filter: brightness(0) invert(1)`), así hay un solo archivo para mantener.
+- El logo del hero usa `assets/logo-white.png`, ya blanco. Antes se pintaba el
+  PNG violeta por CSS y en mobile el navegador alcanzaba a mostrar el paso
+  intermedio en negro. Queda `assets/logo.png`, el violeta original recortado,
+  por si hace falta sobre fondo claro. Para regenerar el blanco:
+
+  ```bash
+  ffmpeg -i assets/logo.png -filter_complex \
+    "[0:v]alphaextract[a];color=white:s=1400x451[w];[w][a]alphamerge" \
+    -frames:v 1 -y assets/logo-white.png
+  ```
 
 ### Transición entre las dos pantallas
 

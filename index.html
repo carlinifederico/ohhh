@@ -33,7 +33,10 @@
     <div class="grain" aria-hidden="true"></div>
 
     <h1 class="hero__logo">
-      <img src="assets/logo.png" alt="OHHH" width="1400" height="451">
+      <!-- white asset on purpose: tinting the violet PNG by CSS filter let mobile
+           paint the black intermediate step for a frame before it turned white -->
+      <img src="assets/logo-white.png" alt="OHHH" width="1400" height="451"
+           fetchpriority="high" decoding="sync">
     </h1>
 
     <a class="scroll" href="#about">
