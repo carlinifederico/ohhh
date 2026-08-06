@@ -28,6 +28,70 @@
     return window.pageYOffset || document.documentElement.scrollTop || 0;
   }
 
+  /* ── the second screen fits one screen ─────────────────────
+     Two things have to hold at once: no line of the statement may wrap, and the
+     whole column — statement, names, the button, the footer — has to land above
+     the fold. Both are paid for out of the same budget, the size of the type, so
+     it is measured here instead of guessed at in a media query. It only ever
+     shrinks: where the CSS size already fits, nothing moves. */
+
+  var statement = document.querySelector('.statement');
+  var stLines   = statement ? statement.querySelectorAll('.line') : [];
+
+  /* the small viewport — what is left once the browser chrome is showing */
+  function screenH() {
+    var probe = document.createElement('div');
+    probe.style.cssText =
+      'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    var h = probe.getBoundingClientRect().height || window.innerHeight;
+    probe.parentNode.removeChild(probe);
+    return h;
+  }
+
+  function fitStatement() {
+    if (!statement || !stLines.length) return;
+
+    statement.style.removeProperty('--fit');          // measure against the CSS size
+    var base = parseFloat(getComputedStyle(statement).fontSize);
+    var col  = statement.clientWidth;
+    if (!base || !col) return;
+
+    // width — the longest line decides for all of them
+    var longest = 0;
+    for (var i = 0; i < stLines.length; i++) {
+      longest = Math.max(longest, stLines[i].scrollWidth);
+    }
+    var size = longest > col ? base * (col / longest) : base;
+    statement.style.setProperty('--fit', size.toFixed(2) + 'px');
+
+    // height — whatever still hangs below the fold comes off the type. Three
+    // passes: a line box is not exactly the type size, so it is easier to
+    // re-measure than to model it.
+    if (!about) return;
+    var floor = base * 0.58;
+    var avail = screenH();
+
+    for (var pass = 0; pass < 3; pass++) {
+      var over = about.getBoundingClientRect().height - avail;
+      if (over <= 1 || size <= floor) break;
+      size = Math.max(size - over / (stLines.length * 0.95), floor);
+      statement.style.setProperty('--fit', size.toFixed(2) + 'px');
+    }
+  }
+
+  fitStatement();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitStatement);          // the real metrics, once loaded
+  }
+  window.addEventListener('load', fitStatement);
+
+  var refit = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(refit);
+    refit = setTimeout(fitStatement, 120);
+  });
+
   /* ── scroll reveals ────────────────────────────────────── */
 
   var targets = document.querySelectorAll('[data-reveal]');

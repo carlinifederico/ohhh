@@ -33,9 +33,10 @@
     <div class="grain" aria-hidden="true"></div>
 
     <h1 class="hero__logo">
-      <!-- white asset on purpose: tinting the violet PNG by CSS filter let mobile
-           paint the black intermediate step for a frame before it turned white -->
-      <img src="assets/logo-white.png" alt="OHHH" width="1400" height="451"
+      <!-- the violet asset, so the logo already carries the colour the second
+           screen is made of. It ships violet: never tint it by CSS filter —
+           mobile paints the black intermediate step for a frame before it turns. -->
+      <img src="assets/logo.png" alt="OHHH" width="1400" height="451"
            fetchpriority="high" decoding="sync">
     </h1>
 
@@ -56,13 +57,15 @@
       <span class="line" data-reveal><i>We are a</i> CREATIVE</span>
       <span class="line" data-reveal><i>and</i> COLLABORATIVE</span>
       <span class="line" data-reveal>GROUP <i>focused on</i></span>
-      <span class="line" data-reveal>BRANDING <i>&amp;</i></span>
-      <span class="line" data-reveal>AUDIOVISUAL</span>
+      <span class="line" data-reveal><span class="hollow">BRANDING</span> <i>&amp;</i></span>
+      <span class="line" data-reveal><span class="hollow">AUDIOVISUAL</span></span>
     </p>
 
     <div class="people">
-      <div class="person" data-reveal>
-        <h2 class="person__name">Santiago<br>Tereso</h2>
+      <!-- data-name feeds the out-of-focus twin in CSS; keep it in sync with the
+           heading, &#38;#10; is the line break -->
+      <div class="person person--santi" data-reveal>
+        <h2 class="person__name" data-name="Santiago&#10;Tereso">Santiago<br>Tereso</h2>
         <p class="person__role">Executive Producer</p>
         <!-- TODO: reemplazar por la URL real del LinkedIn de Santiago -->
         <a class="person__link" href="https://www.linkedin.com/" target="_blank" rel="noopener">
@@ -73,8 +76,8 @@
         </a>
       </div>
 
-      <div class="person person--right" data-reveal>
-        <h2 class="person__name">Federico<br>Carlini</h2>
+      <div class="person person--fede person--right" data-reveal>
+        <h2 class="person__name" data-name="Federico&#10;Carlini">Federico<br>Carlini</h2>
         <p class="person__role">Creative Director</p>
         <a class="person__link" href="https://federicocarlini.com" target="_blank" rel="noopener">
           <span>federicocarlini.com</span>

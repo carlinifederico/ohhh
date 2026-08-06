@@ -178,10 +178,16 @@ a { color: inherit; text-decoration: none; }
 
 /* Wrapper so the content can dissolve while the violet stays solid */
 .about__inner {
-  flex: 1;
+  /* grows into spare room, never shrinks below its content: when something does
+     not fit, the section gets taller (and fitStatement sees it) instead of the
+     button and the footer quietly sliding into each other */
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
-  gap: clamp(2rem, 4vw, 3.25rem);
+  /* one knob: the footer rides half of it back up, so tightening the rhythm on
+     small screens can never pull the footer into the button */
+  --gap: clamp(2rem, 4vw, 3.25rem);
+  gap: var(--gap);
   opacity: var(--enter-o, 1);
   transform: translate3d(0, var(--enter-y, 0px), 0);
 }
@@ -193,15 +199,25 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--display);
   font-weight: 900;
   font-variation-settings: "wdth" 112, "wght" 900;
-  /* the vh term keeps the wall of type from outgrowing short laptop screens */
-  font-size: clamp(2.05rem, min(7.4vw, 12.5vh), 7.5rem);
+  /* --fit is the measured size main.js lands on; the clamp is what shows before
+     it runs, and the vh term keeps the wall of type off short laptop screens */
+  font-size: var(--fit, clamp(2.05rem, min(7.4vw, 12.5vh), 7.5rem));
   line-height: .86;
   letter-spacing: -.035em;
   text-transform: uppercase;
 }
 
+/* One line is one line: a wrap would break the shape of the block, so the size
+   gives way instead — see fitStatement() in main.js. */
 .statement .line {
   display: block;
+  white-space: nowrap;
+}
+
+/* what the studio actually does, hollowed out so the two words read as a label */
+.statement .hollow {
+  color: transparent;
+  -webkit-text-stroke: .042em var(--ink);
 }
 
 .statement i {
@@ -225,7 +241,18 @@ a { color: inherit; text-decoration: none; }
   margin-top: auto;
 }
 
+/* the whole block is one target: hovering the name is hovering the link */
+.person {
+  position: relative;
+  --accent: var(--paper);
+}
+
+.person--santi { --accent: #FFE500; }
+.person--fede  { --accent: #16E0FF; }
+
 .person__name {
+  position: relative;
+  isolation: isolate;
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
@@ -234,6 +261,37 @@ a { color: inherit; text-decoration: none; }
   line-height: .88;
   letter-spacing: -.03em;
   text-transform: uppercase;
+  transition: color .45s var(--ease);
+}
+
+/* The out-of-focus twin. It sits *behind* the crisp heading (z-index -1 inside
+   the isolate above), so however soft it gets the name stays readable — and a
+   travelling mask keeps it to a band, like a lens drifting across the word. */
+.person__name::after {
+  content: attr(data-name);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  white-space: pre;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(1.03);
+  filter: blur(.085em);
+  pointer-events: none;
+  transition: opacity .55s var(--ease);
+  -webkit-mask-image: linear-gradient(104deg, transparent 26%, #000 44%, #000 56%, transparent 74%);
+          mask-image: linear-gradient(104deg, transparent 26%, #000 44%, #000 56%, transparent 74%);
+  -webkit-mask-size: 250% 100%;
+          mask-size: 250% 100%;
+  -webkit-mask-position: 125% 0;
+          mask-position: 125% 0;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+
+@keyframes defocus {
+  from { -webkit-mask-position: 125% 0;  mask-position: 125% 0; }
+  to   { -webkit-mask-position: -25% 0;  mask-position: -25% 0; }
 }
 
 /* the small type goes paper-white: black on this violet is too weak below ~24px */
@@ -269,8 +327,34 @@ a { color: inherit; text-decoration: none; }
   transition: transform .4s var(--ease);
 }
 
-.person__link:hover { background-size: 100% 1.5px; }
-.person__link:hover svg { transform: translate(.18em, -.18em); }
+/* stretched hit area: the name, the role and the link are all the same button */
+.person__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* — the hover, driven from the block so any part of it lights the whole thing — */
+
+.person:hover .person__name,
+.person:focus-within .person__name { color: var(--accent); }
+
+.person:hover .person__link,
+.person:focus-within .person__link {
+  color: var(--accent);
+  background-size: 100% 1.5px;
+}
+
+.person:hover .person__link svg,
+.person:focus-within .person__link svg { transform: translate(.18em, -.18em); }
+
+/* the drift is hover-only: on a touch screen there is nothing to hover with */
+@media (hover: hover) {
+  .person:hover .person__name::after {
+    opacity: 1;
+    animation: defocus 3.4s linear infinite;
+  }
+}
 
 .person--right {
   text-align: right;
@@ -324,7 +408,7 @@ a { color: inherit; text-decoration: none; }
   text-transform: uppercase;
   letter-spacing: .22em;
   padding-top: clamp(.5rem, 2vw, 1rem);
-  margin-top: calc(clamp(2rem, 4.5vw, 4rem) * -.5);
+  margin-top: calc(var(--gap) * -.5);
 }
 
 /* ─────────────────────────  LIQUID DISSOLVE  ─────────────────────────
@@ -372,11 +456,22 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 760px) {
   .hero__logo img { width: clamp(13rem, 66vw, 22rem); }
 
-  .statement { font-size: clamp(2.05rem, 10.5vw, 4rem); }
+  /* The whole second screen has to land inside one phone screen, so on mobile
+     everything below is tuned to give the type room rather than to look roomy.
+     The size here is the column width times the ratio of the longest line
+     ("AND COLLABORATIVE", ~11.6 times the type size); main.js measures the real
+     thing and takes it from there. */
+  .statement {
+    font-size: var(--fit, min(calc((100vw - var(--pad) * 2) * .0855), 3.4rem));
+  }
+
+  .about { padding-top: clamp(1.6rem, 5vw, 2.75rem); }
+
+  .about__inner { --gap: clamp(1.15rem, 3.4vw, 2rem); }
 
   .people {
     grid-template-columns: 1fr;
-    gap: 2.75rem;
+    gap: 2rem;
   }
 
   .person--right {
@@ -387,7 +482,10 @@ a { color: inherit; text-decoration: none; }
   .person--right .person__link { background-position: 0 100%; }
 
   .person__name { font-size: clamp(1.75rem, 8.5vw, 2.6rem); }
-  .person__role { font-size: clamp(1.05rem, 4.6vw, 1.5rem); }
+  .person__role {
+    margin: .55em 0 .95em;
+    font-size: clamp(1.05rem, 4.6vw, 1.5rem);
+  }
   .person__link { font-size: .66rem; }
 
   /* sized so "Get in touch" stays on a single line down to 320px */
@@ -395,10 +493,44 @@ a { color: inherit; text-decoration: none; }
   .cta__arrow { width: clamp(1.6rem, 7vw, 2.6rem); }
 }
 
-/* Landscape phones: keep the hero from crushing the logo */
+/* Landscape phones: keep the hero from crushing the logo, and squeeze every
+   gap out of the second screen — 400-odd pixels of height is not much to fit a
+   statement, two names and the button into. */
 @media (max-height: 480px) and (orientation: landscape) {
   .hero__logo img { width: clamp(11rem, 34vw, 22rem); }
   .scroll { gap: .5rem; }
+
+  .about { padding-top: clamp(.9rem, 3vh, 1.6rem); }
+  .about__inner { --gap: clamp(.55rem, 2.2vh, 1.3rem); }
+
+  /* side by side again — a phone on its side is wider than 760px is tall, and
+     stacking the two of them is what pushes the button off the screen */
+  .people {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    padding-top: clamp(.55rem, 2vh, 1.1rem);
+  }
+
+  .person--right {
+    text-align: right;
+    justify-self: end;
+  }
+
+  .person--right .person__link { background-position: 100% 100%; }
+
+  .person__name { font-size: clamp(1.15rem, 3vw, 2rem); }
+
+  .person__role {
+    margin: .4em 0 .7em;
+    font-size: clamp(.85rem, 1.9vw, 1.2rem);
+  }
+
+  .cta {
+    padding-block: clamp(.45rem, 2.2vh, 1rem);
+    font-size: clamp(1.35rem, min(5.4vw, 11vh), 3.4rem);
+  }
+
+  .footer { padding-top: .35rem; }
 }
 
 /* ─────────────────────────  MOTION  ───────────────────────── */
@@ -423,6 +555,9 @@ a { color: inherit; text-decoration: none; }
   }
 
   .scroll__arrow { animation: none; }
+
+  /* the colour change stays, the drifting blur goes */
+  .person:hover .person__name::after { animation: none; opacity: 0; }
 
   [data-reveal] {
     opacity: 1;

@@ -62,18 +62,49 @@ normalmente en menos de un minuto.
 ## Diseño
 
 - **Violeta** `#7F00FF` (el del logo) · **negro** `#0A0A0A` · **hueso** `#F2F0EB`.
+  En los nombres, el hover trae **amarillo** `#FFE500` (Santiago) y **cian** `#16E0FF`
+  (Federico), que son los dos únicos acentos del sitio.
 - **Archivo Black** para los titulares, **Instrument Serif** *itálica* para las palabras
   intercaladas y los roles, **Space Mono** para las etiquetas chicas.
-- El logo del hero usa `assets/logo-white.png`, ya blanco. Antes se pintaba el
-  PNG violeta por CSS y en mobile el navegador alcanzaba a mostrar el paso
-  intermedio en negro. Queda `assets/logo.png`, el violeta original recortado,
-  por si hace falta sobre fondo claro. Para regenerar el blanco:
+- El logo del hero usa `assets/logo.png`, el violeta, para que la primera pantalla
+  ya traiga el color de la segunda. Ojo: el PNG tiene que venir del color final.
+  Nunca teñirlo con un `filter` de CSS — así estaba antes y en mobile el navegador
+  alcanzaba a pintar un frame del paso intermedio en negro. Queda
+  `assets/logo-white.png` por si alguna vez hace falta sobre fondo oscuro:
 
   ```bash
   ffmpeg -i assets/logo.png -filter_complex \
     "[0:v]alphaextract[a];color=white:s=1400x451[w];[w][a]alphamerge" \
     -frames:v 1 -y assets/logo-white.png
   ```
+
+### La segunda pantalla entra en una pantalla
+
+El statement, los dos nombres, el botón y el footer tienen que verse juntos sin
+scrollear, en cualquier teléfono. Dos condiciones a la vez: ninguna línea del
+statement puede cortarse, y la columna entera tiene que terminar arriba del
+fold. Las dos se pagan con lo mismo —el cuerpo de la tipografía— así que se mide
+en vez de adivinarse: `fitStatement()` en `main.js` calcula el tamaño contra el
+ancho de la línea más larga, y si algo todavía cuelga por abajo lo descuenta del
+tipo (hasta un piso del 58%). El resultado va a `--fit`; el `clamp` del CSS es lo
+que se ve hasta que corre. **Sólo achica**: donde el tamaño del CSS ya entraba,
+no toca nada.
+
+Por eso `.statement .line` es `white-space: nowrap` y `.about__inner` es
+`flex: 1 0 auto` — si algo no entra, la sección crece (y el fit lo ve) en lugar
+de comprimir los hijos hasta que el footer se meta adentro del botón.
+
+Si algún día se edita el texto del statement, no hay nada que recalcular: la
+línea más larga se vuelve a medir sola.
+
+### El hover de los nombres
+
+Todo el bloque de cada persona es un solo botón: `.person__link::after` se estira
+sobre la tarjeta, así que apuntar el nombre ya es apuntar el link. El desenfoque
+es un clon del nombre (`::after` con `content: attr(data-name)`) que vive
+*detrás* del texto y se ve sólo a través de una máscara que lo cruza — el nombre
+en sí nunca se desenfoca, se lee igual. Si se cambia un nombre en el HTML hay que
+cambiar también su `data-name`, donde `&#10;` es el salto de línea.
 
 ### Transición entre las dos pantallas
 
